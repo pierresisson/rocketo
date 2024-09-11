@@ -1,112 +1,142 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { CommandDialog, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command"
-import { Button } from "@/components/ui/button"
-import { MoonIcon, SunIcon, SearchIcon, MenuIcon } from "lucide-react"
+import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import {
+    CommandDialog,
+    CommandInput,
+    CommandList,
+    CommandEmpty,
+    CommandGroup,
+    CommandItem,
+} from "@/components/ui/command";
+import { Button } from "@/components/ui/button";
+import { SearchIcon, MenuIcon } from "lucide-react";
 
 export default function Navbar() {
-  const router = useRouter();
-  const [isOpen, setIsOpen] = useState(false);
-  const [theme, setTheme] = useState('light');
+    const router = useRouter();
+    const [isOpen, setIsOpen] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  useEffect(() => {
-    const down = (e: KeyboardEvent) => {
-      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        setIsOpen((open) => !open);
-      }
-    };
+    useEffect(() => {
+        const down = (e: KeyboardEvent) => {
+            if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+                e.preventDefault();
+                setIsOpen((open) => !open);
+            }
+        };
 
-    document.addEventListener('keydown', down);
-    return () => document.removeEventListener('keydown', down);
-  }, []);
+        document.addEventListener("keydown", down);
+        return () => document.removeEventListener("keydown", down);
+    }, []);
 
-  const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
-  };
+    useEffect(() => {
+        const handleKeyPress = (e: KeyboardEvent) => {
+            if (e.key === "P") {
+                e.preventDefault();
+                handleClickAddProject();
+            }
+        };
 
-  const navigationItems = [
-    { name: 'Home', shortcut: 'H', href: '/' },
-    { name: 'Projects', shortcut: 'P', href: '/projects' },
-    { name: 'Submit Project', shortcut: 'S', href: '/submit' },
-    { name: 'Dashboard', shortcut: 'D', href: '/dashboard' },
-    { name: 'Rewards', shortcut: 'R', href: '/rewards' },
-  ];
+        document.addEventListener("keydown", handleKeyPress);
+        return () => document.removeEventListener("keydown", handleKeyPress);
+    }, []);
 
-  return (
-    <>
-    <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 items-center">
-        <Button
-          variant="ghost"
-          className="mr-2 px-0 text-base hover:bg-transparent focus:ring-0 md:hidden"
-          onClick={() => setIsOpen(true)}
-        >
-          <MenuIcon className="h-6 w-6" />
-          <span className="sr-only">Open menu</span>
-        </Button>
-        <div className="mr-4 hidden md:flex">
-          <nav className="flex items-center space-x-6 text-sm font-medium">
-            {navigationItems.map((item) => (
-              <Button
-                key={item.name}
-                variant="ghost"
-                className="px-4"
-                onClick={() => router.push(item.href)}
-              >
-                {item.name}
-              </Button>
-            ))}
-          </nav>
-        </div>
-        <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsOpen(true)}
-            className="w-9 px-0"
-          >
-            <SearchIcon className="h-4 w-4" />
-            <span className="sr-only">Search</span>
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleTheme}
-            className="w-9 px-0"
-          >
-            {theme === 'dark' ? (
-              <SunIcon className="h-4 w-4" />
-            ) : (
-              <MoonIcon className="h-4 w-4" />
-            )}
-            <span className="sr-only">Toggle theme</span>
-          </Button>
-        </div>
-      </div>
-    </header>
-    <CommandDialog open={isOpen} onOpenChange={setIsOpen}>
-        <CommandInput placeholder="Type a command or search..." />
-        <CommandList>
-          <CommandEmpty>No results found.</CommandEmpty>
-          <CommandGroup heading="Navigation">
-            {navigationItems.map((item) => (
-              <CommandItem
-                key={item.name}
-                onSelect={() => {
-                  router.push(item.href)
-                  setIsOpen(false)
-                }}
-              >
-                {item.name}
-                <span className="ml-auto text-xs tracking-widest opacity-60">{item.shortcut}</span>
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        </CommandList>
-      </CommandDialog>
-      </>
-  );
+    const navigationItems = [
+        { name: "Home", href: "/" },
+        { name: "Projects", href: "/projects" },
+        { name: "Submit Project", href: "/submit/new" },
+        { name: "Dashboard", href: "/dashboard" },
+        { name: "Rewards", href: "/rewards" },
+    ];
+
+    const handleClickAddProject = useCallback(() => {
+        router.push("/submit/new");
+    }, [router]);
+
+    return (
+        <>
+            <header className="w-full bg-background">
+                <div className="flex flex-col lg:flex-row items-center justify-between gap-4 p-4">
+                    <div className="w-full lg:w-1/3">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setIsOpen(true)}
+                        >
+                            <SearchIcon className="mr-2 h-4 w-4" />
+                            <span>Search...</span>
+                        </Button>
+                    </div>
+
+                    <div className="lg:hidden">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() =>
+                                setIsMobileMenuOpen(!isMobileMenuOpen)
+                            }
+                        >
+                            <MenuIcon className="h-6 w-6" />
+                        </Button>
+                    </div>
+                    <nav
+                        className={`w-full lg:w-auto ${isMobileMenuOpen ? "block" : "hidden"} lg:block`}
+                    >
+                        <ul className="flex flex-col lg:flex-row items-center justify-center space-y-2 lg:space-y-0 lg:space-x-4">
+                            {navigationItems.map((item) => (
+                                <li key={item.name}>
+                                    <Button
+                                        variant="ghost"
+                                        className="w-full lg:w-auto"
+                                        onClick={() => router.push(item.href)}
+                                    >
+                                        {item.name}
+                                    </Button>
+                                </li>
+                            ))}
+                        </ul>
+                    </nav>
+                    <div className="w-full lg:w-1/3 flex justify-center lg:justify-end">
+                        <Button
+                            onClick={handleClickAddProject}
+                            variant="secondary"
+                            size="sm"
+                            className="flex items-center gap-2"
+                        >
+                            <p className="flex gap-1 items-center">
+                                Press
+                                <span className="rounded py-1 px-2 text-foreground border bg-muted font-bold">
+                                    P
+                                </span>
+                                to add a project
+                            </p>
+                        </Button>
+                    </div>
+                </div>
+            </header>
+            <CommandDialog open={isOpen} onOpenChange={setIsOpen}>
+                <CommandInput placeholder="Type a command or search..." />
+                <CommandList>
+                    <CommandEmpty>No results found.</CommandEmpty>
+                    <CommandGroup heading="Navigation">
+                        {navigationItems.map((item) => (
+                            <CommandItem
+                                key={item.name}
+                                onSelect={() => {
+                                    router.push(item.href);
+                                    setIsOpen(false);
+                                }}
+                            >
+                                {item.name}
+                                <span className="ml-auto text-xs tracking-widest opacity-60">
+                                    {item.shortcut}
+                                </span>
+                            </CommandItem>
+                        ))}
+                    </CommandGroup>
+                </CommandList>
+            </CommandDialog>
+        </>
+    );
 }
